@@ -44,9 +44,9 @@
 - [x] Gate BreakCountdown, SessionCount, DailyTotal, Interruption sources behind Pro
 - [x] Free users get: Status + FocusDuration only
 
-### Step 8: Polish
-- [ ] Add ProGuard rules for Room + Billing
-- [ ] Add crash reporting setup (Firebase Crashlytics)
+### Step 8: Polish [DONE]
+- [x] Add ProGuard rules for Room + Billing (updated to new package)
+- [x] Add crash reporting setup (Firebase Crashlytics via BOM)
 - [ ] Test SCHEDULE_EXACT_ALARM on API 34+ (user opt-in needed)
 - [ ] Physical watch testing
 
