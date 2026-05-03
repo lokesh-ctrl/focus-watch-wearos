@@ -31,11 +31,10 @@
 - [x] DND toggle added to SettingsActivity with [PRO] badge
 - [x] Hooked into: startFocusInternal, stopSession, onBreakTimerExpired, toggleSession
 
-## Remaining (Next Session)
-
 ### Step 6: Play Store Prep
-- [ ] Privacy policy markdown (PRIVACY_POLICY.md + hosted URL)
-- [ ] Play Store listing copy (short + full description)
+- [x] Privacy policy markdown (PRIVACY_POLICY.md)
+- [x] Play Store listing copy (PLAY_STORE_LISTING.md)
+- [ ] Privacy policy hosted URL
 - [ ] Screenshots from emulator (round 384x384)
 - [ ] Feature graphic (1024x500)
 - [ ] Data safety declaration notes
@@ -47,6 +46,19 @@
 ### Step 8: Polish [DONE]
 - [x] Add ProGuard rules for Room + Billing (updated to new package)
 - [x] Add crash reporting setup (Firebase Crashlytics via BOM)
+- [ ] Test SCHEDULE_EXACT_ALARM on API 34+ (user opt-in needed)
+- [ ] Physical watch testing
+
+### Step 9: Phase 1 Features [DONE]
+- [x] Focus profiles: Deep Work (50/10), Study (25/5), Sprint (15/3)
+- [x] 2 new themes: Forest and Neon
+- [x] Haptic pattern options (gentle, assertive, silent)
+- [x] Guided breathing animation during break
+
+## Remaining
+
+### Step 10: Phase 1 Continued
+- [ ] Weekly insights screen (best day, trend chart)
 - [ ] Test SCHEDULE_EXACT_ALARM on API 34+ (user opt-in needed)
 - [ ] Physical watch testing
 

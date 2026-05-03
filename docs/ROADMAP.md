@@ -50,12 +50,12 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 
 ## Phase 1: Pro Value (3-4 weeks post-launch)
 
-- [ ] Auto-DND toggle on focus start, restore on break/idle
-- [ ] Focus profiles: 3 presets (Deep Work 50min, Study 25min, Sprint 15min)
+- [x] Auto-DND toggle on focus start, restore on break/idle
+- [x] Focus profiles: 3 presets (Deep Work 50min, Study 25min, Sprint 15min)
 - [ ] Weekly insights screen (best day, trend, avg score chart)
-- [ ] Guided breathing canvas animation during break
-- [ ] 2 new themes (Forest, Neon)
-- [ ] Haptic pattern options (gentle, assertive, silent)
+- [x] Guided breathing canvas animation during break
+- [x] 2 new themes (Forest, Neon)
+- [x] Haptic pattern options (gentle, assertive, silent)
 
 ## Phase 2: Ecosystem (2-3 months post-launch)
 

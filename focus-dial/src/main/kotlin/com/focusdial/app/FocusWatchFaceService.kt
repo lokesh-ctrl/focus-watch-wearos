@@ -327,6 +327,12 @@ class FocusCanvasRenderer(
         canvas.drawText(formatTime(time), cx, cy + 120f, subtlePaint)
     }
 
+    private val breathPaint = Paint().apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
+        isAntiAlias = true
+    }
+
     private fun renderBreakMode(
         canvas: Canvas, cx: Float, cy: Float, w: Float, h: Float,
         time: ZonedDateTime, manager: FocusSessionManager, theme: FocusTheme
@@ -343,20 +349,38 @@ class FocusCanvasRenderer(
         arcPaint.color = theme.breakColor
         canvas.drawArc(arcRect, -90f, progress * 360f, false, arcPaint)
 
-        statusPaint.color = theme.breakColor
-        canvas.drawText("BREAK", cx, cy - 70f, statusPaint)
+        // Breathing circle animation (4s inhale + 4s exhale cycle)
+        val breathCycle = 8000L
+        val breathPhase = (System.currentTimeMillis() % breathCycle).toFloat() / breathCycle
+        val breathScale = if (breathPhase < 0.5f) {
+            breathPhase * 2f
+        } else {
+            1f - (breathPhase - 0.5f) * 2f
+        }
+        val minRadius = 20f
+        val maxRadius = 50f
+        val breathRadius = minRadius + (maxRadius - minRadius) * breathScale
+        breathPaint.color = theme.breakColor
+        breathPaint.alpha = (100 + 155 * breathScale).toInt()
+        canvas.drawCircle(cx, cy - 30f, breathRadius, breathPaint)
 
-        timePaint.textSize = 60f
+        val breathLabel = if (breathPhase < 0.5f) "Breathe in" else "Breathe out"
+        infoPaint.color = theme.breakColor
+        canvas.drawText(breathLabel, cx, cy + 40f, infoPaint)
+        infoPaint.color = Color.parseColor("#CCCCCC")
+
+        statusPaint.color = theme.breakColor
+        canvas.drawText("BREAK", cx, cy - 90f, statusPaint)
+
+        timePaint.textSize = 44f
         val breakText = if (remainingMin > 0) "${remainingMin}min" else "Done!"
-        canvas.drawText(breakText, cx, cy + 5f, timePaint)
+        canvas.drawText(breakText, cx, cy + 75f, timePaint)
         timePaint.textSize = 72f
 
-        canvas.drawText("Stretch & breathe", cx, cy + 50f, infoPaint)
-
         dotPaint.color = theme.accentColor
-        canvas.drawText(cachedDots, cx, cy + 90f, dotPaint)
+        canvas.drawText(cachedDots, cx, cy + 110f, dotPaint)
 
-        canvas.drawText(formatTime(time), cx, cy + 130f, subtlePaint)
+        canvas.drawText(formatTime(time), cx, cy + 140f, subtlePaint)
     }
 
     @Suppress("UNUSED_PARAMETER")
