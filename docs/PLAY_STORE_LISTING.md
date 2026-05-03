@@ -1,7 +1,7 @@
-# Play Store Listing — Everest Focus
+# Play Store Listing — Focus Dial
 
 ## App Name
-Everest Focus — Timer Watch Face
+Focus Dial — Timer Watch Face
 
 ## Short Description (80 chars max)
 Focus timer watch face. Tap to start deep work. See your progress at a glance.
@@ -10,7 +10,7 @@ Focus timer watch face. Tap to start deep work. See your progress at a glance.
 
 The only watch face that tracks your focus.
 
-Everest Focus turns your Wear OS watch into a productivity companion. No app to open, no phone required — just tap the dial to start a focus session and watch your progress arc fill in real time.
+Focus Dial turns your Wear OS watch into a productivity companion. No app to open, no phone required — just tap the dial to start a focus session and watch your progress arc fill in real time.
 
 INTELLIGENT FOCUS TIMER
 • Customizable Pomodoro sessions (15-120 minutes)

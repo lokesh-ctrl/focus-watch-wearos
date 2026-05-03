@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "wearos-themes"
-include(":everest-focus")
+rootProject.name = "focus-dial"
+include(":focus-dial")

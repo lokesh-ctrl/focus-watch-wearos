@@ -1,4 +1,4 @@
-# Everest Focus
+# Focus Dial
 
 A productivity-focused watch face for Wear OS that combines a Pomodoro timer with an always-on display. Tap the dial to start a focus session — no app to open, no phone required.
 
@@ -19,7 +19,7 @@ A productivity-focused watch face for Wear OS that combines a Pomodoro timer wit
 ## Architecture
 
 ```
-everest-focus/src/main/kotlin/com/everest/focus/
+focus-dial/src/main/kotlin/com/focusdial/app/
 ├── FocusWatchFaceService.kt    # Canvas-rendered watch face
 ├── FocusSessionManager.kt      # Timer state machine (singleton)
 ├── FocusService.kt             # Foreground service + notifications
@@ -39,7 +39,7 @@ everest-focus/src/main/kotlin/com/everest/focus/
 ## Build
 
 ```bash
-./gradlew :everest-focus:assembleDebug
+./gradlew :focus-dial:assembleDebug
 ```
 
 Requires Android SDK with Wear OS system images. Min SDK 30, target SDK 34.

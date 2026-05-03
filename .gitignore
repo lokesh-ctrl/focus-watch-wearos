@@ -3,6 +3,7 @@
 /local.properties
 /.idea
 /build
+/focus-dial/build
 /everest-focus/build
 /captures
 .externalNativeBuild

@@ -1,4 +1,4 @@
-# Everest Focus — Product Roadmap & Monetization Plan
+# Focus Dial — Product Roadmap & Monetization Plan
 
 ## Positioning
 
@@ -94,4 +94,4 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 | Forest | No (app only) | No | High (open app) |
 | Focus Timer | No | No | High |
 | Tide | No WearOS | Sounds | N/A |
-| **Everest Focus** | **Yes** | **Adaptive + Calendar** | **One tap** |
+| **Focus Dial** | **Yes** | **Adaptive + Calendar** | **One tap** |

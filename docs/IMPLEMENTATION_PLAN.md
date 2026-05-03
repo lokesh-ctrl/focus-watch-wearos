@@ -59,7 +59,7 @@ Last compile: **SUCCESS** (compileDebugKotlin passed, 1 harmless warning)
 | File | Change |
 |------|--------|
 | `gradle/libs.versions.toml` | Added billing v7.0.0 |
-| `everest-focus/build.gradle.kts` | Added billing dependency |
+| `focus-dial/build.gradle.kts` | Added billing dependency |
 | `data/BillingManager.kt` | **New** — Play Billing wrapper (singleton) |
 | `data/FocusPreferences.kt` | Added IS_PRO, ONBOARDING_COMPLETE, DND keys + methods |
 | `data/HistoryRepository.kt` | Free tier 7-day retention |

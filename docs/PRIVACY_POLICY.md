@@ -1,10 +1,10 @@
-# Privacy Policy — Everest Focus
+# Privacy Policy — Focus Dial
 
 **Last updated:** May 2026
 
 ## Overview
 
-Everest Focus is a productivity timer and watch face for Wear OS. We are committed to protecting your privacy.
+Focus Dial is a productivity timer and watch face for Wear OS. We are committed to protecting your privacy.
 
 ## Data Collection
 
@@ -54,4 +54,4 @@ We may update this policy from time to time. Changes will be reflected in the "L
 
 ## Contact
 
-If you have questions about this privacy policy, contact us at: everest.focus.app@gmail.com
+If you have questions about this privacy policy, contact us at: focusdial.app@gmail.com
