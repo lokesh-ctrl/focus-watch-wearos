@@ -32,21 +32,21 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 
 ## Phase 0: Launch-Ready (2-3 weeks)
 
-- [ ] Add `IS_PRO` billing flag to DataStore
-- [ ] Integrate Google Play Billing Library (one-time non-consumable)
-- [ ] Gate themes (Ember, Ocean, Monochrome) behind Pro
-- [ ] Gate adaptive breaks behind Pro
-- [ ] Limit free history to 7 days (Pro = 30 days)
-- [ ] Limit free complications to 2 (Status + Focus Duration)
-- [ ] First-run onboarding (3-screen swipe tutorial)
-- [ ] Fix `runBlocking` in SettingsActivity (ANR risk)
-- [ ] Privacy policy (GitHub Pages)
-- [ ] Play Store listing: screenshots, feature graphic, descriptions
+- [x] Add `IS_PRO` billing flag to DataStore
+- [x] Integrate Google Play Billing Library (one-time non-consumable)
+- [x] Gate themes (Ember, Ocean, Monochrome) behind Pro
+- [x] Gate adaptive breaks behind Pro
+- [x] Limit free history to 7 days (Pro = 30 days)
+- [x] Limit free complications to 2 (Status + Focus Duration)
+- [x] First-run onboarding (3-screen swipe tutorial)
+- [x] Fix `runBlocking` in SettingsActivity (ANR risk)
+- [x] Privacy policy (GitHub Pages)
+- [x] Play Store listing: screenshots, feature graphic, descriptions
 - [ ] Content rating questionnaire
 - [ ] Data safety section declaration
-- [ ] Accessibility: contentDescription on complications
+- [x] Accessibility: contentDescription on complications
 - [ ] Submit to closed testing track (14-day clock)
-- [ ] Crash reporting (Firebase Crashlytics)
+- [x] Crash reporting (Firebase Crashlytics)
 
 ## Phase 1: Pro Value (3-4 weeks post-launch)
 
