@@ -11,6 +11,7 @@ import android.os.Vibrator
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
+import com.focusdial.app.data.FocusPreferences
 import com.focusdial.app.data.FocusState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -20,13 +21,17 @@ class FocusService : LifecycleService() {
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var vibrator: Vibrator
+    private lateinit var prefs: FocusPreferences
     private var previousState: String = ""
+    private var hapticStyle: String = "gentle"
 
     override fun onCreate() {
         super.onCreate()
         notificationManager = getSystemService(NotificationManager::class.java)
         vibrator = getSystemService(Vibrator::class.java)
+        prefs = FocusPreferences(this)
         createNotificationChannels()
+        lifecycleScope.launch { hapticStyle = prefs.getHapticStyle() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -94,16 +99,25 @@ class FocusService : LifecycleService() {
     }
 
     private fun vibrateStart() {
-        vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+        if (hapticStyle == "silent") return
+        val duration = if (hapticStyle == "assertive") 200L else 100L
+        vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
     private fun vibrateBreak() {
-        val pattern = longArrayOf(0, 200, 100, 200, 100, 400)
+        if (hapticStyle == "silent") return
+        val pattern = if (hapticStyle == "assertive") {
+            longArrayOf(0, 300, 100, 300, 100, 600)
+        } else {
+            longArrayOf(0, 150, 80, 150)
+        }
         vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
     }
 
     private fun vibrateEnd() {
-        vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
+        if (hapticStyle == "silent") return
+        val duration = if (hapticStyle == "assertive") 500L else 200L
+        vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
     private fun showBreakNotification() {

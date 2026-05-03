@@ -45,6 +45,10 @@ class FocusPreferences(private val context: Context) {
         // DND
         val DND_ENABLED = booleanPreferencesKey("dnd_enabled")
         val PREVIOUS_INTERRUPTION_FILTER = intPreferencesKey("previous_interruption_filter")
+        // Focus Profile
+        val ACTIVE_PROFILE = stringPreferencesKey("active_profile")
+        // Haptic
+        val HAPTIC_STYLE = stringPreferencesKey("haptic_style")
     }
 
     // --- Settings ---
@@ -240,6 +244,26 @@ class FocusPreferences(private val context: Context) {
 
     suspend fun setPreviousInterruptionFilter(filter: Int) {
         context.dataStore.edit { it[Keys.PREVIOUS_INTERRUPTION_FILTER] = filter }
+    }
+
+    // --- Focus Profile ---
+
+    suspend fun getActiveProfile(): String {
+        return context.dataStore.data.first()[Keys.ACTIVE_PROFILE] ?: ""
+    }
+
+    suspend fun setActiveProfile(profileId: String) {
+        context.dataStore.edit { it[Keys.ACTIVE_PROFILE] = profileId }
+    }
+
+    // --- Haptic ---
+
+    suspend fun getHapticStyle(): String {
+        return context.dataStore.data.first()[Keys.HAPTIC_STYLE] ?: "gentle"
+    }
+
+    suspend fun setHapticStyle(style: String) {
+        context.dataStore.edit { it[Keys.HAPTIC_STYLE] = style }
     }
 
     // --- Day Reset ---

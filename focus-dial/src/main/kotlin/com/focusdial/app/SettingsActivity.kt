@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.focusdial.app.data.BillingManager
 import com.focusdial.app.data.FocusPreferences
+import com.focusdial.app.data.FocusProfile
 import com.focusdial.app.data.HistoryRepository
 import com.focusdial.app.theme.FocusThemes
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,8 @@ class SettingsActivity : Activity() {
     private var calendarEnabled = false
     private var isPro = false
     private var dndEnabled = false
+    private var activeProfileId = ""
+    private var hapticStyle = "gentle"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +56,8 @@ class SettingsActivity : Activity() {
             calendarEnabled = prefs.isCalendarEnabled()
             isPro = prefs.isPro()
             dndEnabled = prefs.isDndEnabled()
+            activeProfileId = prefs.getActiveProfile()
+            hapticStyle = prefs.getHapticStyle()
             buildUi()
         }
     }
@@ -71,6 +76,12 @@ class SettingsActivity : Activity() {
         // Theme Picker
         layout.addView(label("Theme"))
         layout.addView(createThemePicker())
+        layout.addView(spacer())
+
+        // Focus Profiles (Pro)
+        layout.addView(proLabel("Focus Profiles"))
+        layout.addView(createProfilePicker())
+        layout.addView(hintText("Quick presets for different work styles"))
         layout.addView(spacer())
 
         // Focus Duration
@@ -163,6 +174,11 @@ class SettingsActivity : Activity() {
         }
         layout.addView(dndSwitch)
         layout.addView(hintText("Silences notifications during focus sessions"))
+        layout.addView(spacer())
+
+        // Haptic Style
+        layout.addView(label("Haptics"))
+        layout.addView(createHapticPicker())
         layout.addView(spacer())
 
         // Calendar Toggle
@@ -262,6 +278,79 @@ class SettingsActivity : Activity() {
                     }
                 }
                 addView(circle)
+            }
+        }
+    }
+
+    private fun createProfilePicker(): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, 8, 0, 8)
+
+            FocusProfile.ALL.forEach { profile ->
+                addView(Button(this@SettingsActivity).apply {
+                    text = profile.name
+                    textSize = 11f
+                    val isActive = activeProfileId == profile.id
+                    setBackgroundColor(if (isActive) 0xFF4CAF50.toInt() else 0xFF333333.toInt())
+                    setTextColor(0xFFFFFFFF.toInt())
+                    minimumWidth = 0
+                    minimumHeight = 40
+                    setPadding(12, 4, 12, 4)
+                    val params = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { setMargins(4, 0, 4, 0) }
+                    layoutParams = params
+                    setOnClickListener {
+                        if (!isPro) {
+                            launchUpgrade()
+                            return@setOnClickListener
+                        }
+                        activeProfileId = profile.id
+                        focusMinutes = profile.focusMinutes
+                        breakMinutes = profile.breakMinutes
+                        scope.launch {
+                            prefs.setActiveProfile(profile.id)
+                            prefs.setFocusDuration(profile.focusMinutes)
+                            prefs.setBreakDuration(profile.breakMinutes)
+                        }
+                        recreate()
+                    }
+                })
+            }
+        }
+    }
+
+    private fun createHapticPicker(): LinearLayout {
+        val styles = listOf("gentle", "assertive", "silent")
+        val labels = listOf("Gentle", "Strong", "Silent")
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            setPadding(0, 8, 0, 8)
+
+            styles.forEachIndexed { index, style ->
+                addView(Button(this@SettingsActivity).apply {
+                    text = labels[index]
+                    textSize = 11f
+                    val isActive = hapticStyle == style
+                    setBackgroundColor(if (isActive) 0xFF4CAF50.toInt() else 0xFF333333.toInt())
+                    setTextColor(0xFFFFFFFF.toInt())
+                    minimumWidth = 0
+                    minimumHeight = 40
+                    setPadding(12, 4, 12, 4)
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { setMargins(4, 0, 4, 0) }
+                    setOnClickListener {
+                        hapticStyle = style
+                        scope.launch { prefs.setHapticStyle(style) }
+                        recreate()
+                    }
+                })
             }
         }
     }

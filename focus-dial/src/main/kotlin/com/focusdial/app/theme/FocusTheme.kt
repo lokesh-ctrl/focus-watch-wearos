@@ -64,7 +64,31 @@ object FocusThemes {
         statusFontSize = 17f
     )
 
-    val ALL = listOf(MINIMAL, EMBER, OCEAN, MONOCHROME)
+    val FOREST = FocusTheme(
+        id = "forest",
+        displayName = "Forest",
+        accentColor = Color.parseColor("#2E7D32"),
+        breakColor = Color.parseColor("#81C784"),
+        trackColor = Color.parseColor("#1B5E20"),
+        arcStrokeWidth = 12f,
+        timeFontWeight = Typeface.NORMAL,
+        timeFontFamily = "sans-serif-medium",
+        statusFontSize = 17f
+    )
+
+    val NEON = FocusTheme(
+        id = "neon",
+        displayName = "Neon",
+        accentColor = Color.parseColor("#E040FB"),
+        breakColor = Color.parseColor("#00E5FF"),
+        trackColor = Color.parseColor("#1A1A2E"),
+        arcStrokeWidth = 8f,
+        timeFontWeight = Typeface.BOLD,
+        timeFontFamily = "sans-serif-condensed",
+        statusFontSize = 18f
+    )
+
+    val ALL = listOf(MINIMAL, EMBER, OCEAN, MONOCHROME, FOREST, NEON)
 
     fun getById(id: String): FocusTheme = ALL.find { it.id == id } ?: MINIMAL
 }
