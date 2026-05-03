@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Circle background -->
+    <path
+        android:fillColor="#FF4CAF50"
+        android:pathData="M24,24m-20,0a20,20 0,1 1,40 0a20,20 0,1 1,-40 0" />
+    <!-- Focus triangle (play icon) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M18,14 L18,34 L36,24 Z" />
+</vector>

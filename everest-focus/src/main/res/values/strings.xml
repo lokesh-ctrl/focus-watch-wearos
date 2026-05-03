@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Everest Focus</string>
+
+    <!-- Configuration -->
+    <string name="config_accent_color">Accent Color</string>
+    <string name="color_green">Green</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_red">Red</string>
+
+    <!-- Complication Slots -->
+    <string name="slot_focus_progress">Focus Progress</string>
+    <string name="slot_break">Break Timer</string>
+    <string name="slot_sessions">Sessions</string>
+    <string name="slot_daily_total">Daily Total</string>
+    <string name="slot_interruptions">Interruptions</string>
+    <string name="slot_status">Status</string>
+
+    <!-- Complication Labels -->
+    <string name="complication_focus_duration">Focus Duration</string>
+    <string name="complication_break_countdown">Break Countdown</string>
+    <string name="complication_session_count">Session Count</string>
+    <string name="complication_daily_total">Daily Deep Work</string>
+    <string name="complication_interruptions">Interruptions</string>
+    <string name="complication_status">Focus Status</string>
+
+    <!-- Notifications -->
+    <string name="notification_focus_active">Focus session active</string>
+    <string name="notification_break_time">Time for a break!</string>
+</resources>

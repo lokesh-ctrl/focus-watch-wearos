@@ -1,0 +1,14 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+/build
+/everest-focus/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+keystore/*.keystore
+keystore/*.jks
+*.apk
+*.aab

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="450dp"
+    android:height="450dp"
+    android:viewportWidth="450"
+    android:viewportHeight="450">
+    <!-- Black circle background -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M225,225m-225,0a225,225 0,1 1,450 0a225,225 0,1 1,-450 0" />
+    <!-- Progress arc (partial) -->
+    <path
+        android:strokeColor="#FF4CAF50"
+        android:strokeWidth="8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M225,30 A195,195 0 1,1 60,300" />
+    <!-- Time text placeholder (14:35) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M140,200 L145,200 L145,240 L140,240 Z M150,200 L180,200 L180,205 L155,205 L155,218 L175,218 L175,223 L155,223 L155,235 L180,235 L180,240 L150,240 Z" />
+</vector>
