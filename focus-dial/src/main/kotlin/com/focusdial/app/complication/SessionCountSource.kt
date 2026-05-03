@@ -19,6 +19,13 @@ class SessionCountSource : SuspendingComplicationDataSourceService() {
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
         val prefs = FocusPreferences(this)
+        if (!prefs.isPro()) {
+            return ShortTextComplicationData.Builder(
+                text = PlainComplicationText.Builder("PRO").build(),
+                contentDescription = PlainComplicationText.Builder("Upgrade to Pro for session count").build()
+            ).build()
+        }
+
         val completed = prefs.getCompletedSessions()
         val goal = prefs.getDailyGoal()
 

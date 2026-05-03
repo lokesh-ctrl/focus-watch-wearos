@@ -7,6 +7,7 @@ import androidx.wear.watchface.complications.data.ShortTextComplicationData
 import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import androidx.wear.watchface.complications.datasource.SuspendingComplicationDataSourceService
 import com.focusdial.app.FocusSessionManager
+import com.focusdial.app.data.FocusPreferences
 import com.focusdial.app.data.FocusState
 
 class InterruptionSource : SuspendingComplicationDataSourceService() {
@@ -19,6 +20,14 @@ class InterruptionSource : SuspendingComplicationDataSourceService() {
     }
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
+        val prefs = FocusPreferences(this)
+        if (!prefs.isPro()) {
+            return ShortTextComplicationData.Builder(
+                text = PlainComplicationText.Builder("PRO").build(),
+                contentDescription = PlainComplicationText.Builder("Upgrade to Pro for interruption tracking").build()
+            ).build()
+        }
+
         val manager = FocusSessionManager.getInstance(this)
 
         val count = when (val state = manager.state.value) {

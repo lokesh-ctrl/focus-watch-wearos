@@ -13,7 +13,7 @@
 - [x] Adaptive breaks gated — disabled toggle with [PRO] badge
 - [x] Free history retention reduced from 30 → 7 days in `HistoryRepository.pruneOldData()`
 - [x] Upgrade button shown to free users in Settings
-- [ ] Gate complications: free users get Status + FocusDuration only (TODO)
+- [x] Gate complications: free users get Status + FocusDuration only
 
 ### Step 3: Fix ANR Risk [DONE]
 - [x] Replaced `runBlocking` in `SettingsActivity.onCreate` with `scope.launch` + `buildUi()`
@@ -40,9 +40,9 @@
 - [ ] Feature graphic (1024x500)
 - [ ] Data safety declaration notes
 
-### Step 7: Complication Gating
-- [ ] Gate BreakCountdown, SessionCount, DailyTotal, Interruption sources behind Pro
-- [ ] Free users get: Status + FocusDuration only
+### Step 7: Complication Gating [DONE]
+- [x] Gate BreakCountdown, SessionCount, DailyTotal, Interruption sources behind Pro
+- [x] Free users get: Status + FocusDuration only
 
 ### Step 8: Polish
 - [ ] Add ProGuard rules for Room + Billing

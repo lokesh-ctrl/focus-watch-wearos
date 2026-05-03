@@ -21,6 +21,13 @@ class DailyTotalSource : SuspendingComplicationDataSourceService() {
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
         val prefs = FocusPreferences(this)
+        if (!prefs.isPro()) {
+            return ShortTextComplicationData.Builder(
+                text = PlainComplicationText.Builder("PRO").build(),
+                contentDescription = PlainComplicationText.Builder("Upgrade to Pro for daily total").build()
+            ).build()
+        }
+
         var totalMillis = prefs.getDailyTotalMillis()
 
         val manager = FocusSessionManager.getInstance(this)
