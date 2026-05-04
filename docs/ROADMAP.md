@@ -52,7 +52,7 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 
 - [x] Auto-DND toggle on focus start, restore on break/idle
 - [x] Focus profiles: 3 presets (Deep Work 50min, Study 25min, Sprint 15min)
-- [ ] Weekly insights screen (best day, trend, avg score chart)
+- [x] Weekly insights screen (best day, trend, avg score chart)
 - [x] Guided breathing canvas animation during break
 - [x] 2 new themes (Forest, Neon)
 - [x] Haptic pattern options (gentle, assertive, silent)
@@ -62,14 +62,14 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 - [ ] Companion phone app (Jetpack Compose)
 - [ ] Watch-to-phone sync (DataLayer API)
 - [ ] Phone-side notification whitelist during focus
-- [ ] Data export (CSV/JSON from phone app)
-- [ ] Health Connect integration (log focus as mindfulness)
+- [x] Data export (JSON via share intent from watch)
+- [x] Health Connect integration (log focus as mindfulness)
 - [ ] Phone home screen widget
 
 ## Phase 3: Growth (4-6 months)
 
 - [ ] Subscription tier on companion app ($2.99/mo)
-- [ ] Wear OS Tiles support
+- [x] Wear OS Tiles support
 - [ ] Social accountability / streak sharing
 - [ ] Todoist/Notion integration
 - [ ] AI coach (suggest optimal session length from patterns)
