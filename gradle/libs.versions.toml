@@ -13,6 +13,7 @@ billing = "7.0.0"
 firebase-bom = "33.1.0"
 tiles = "1.4.0"
 horologist = "0.6.10"
+health-connect = "1.1.0-alpha02"
 crashlytics-plugin = "3.0.1"
 google-services = "4.4.1"
 
@@ -35,6 +36,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics-ktx" }
 tiles = { module = "androidx.wear.tiles:tiles", version.ref = "tiles" }
 tiles-material = { module = "androidx.wear.tiles:tiles-material", version.ref = "tiles" }
+health-connect = { module = "androidx.health.connect:connect-client", version.ref = "health-connect" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

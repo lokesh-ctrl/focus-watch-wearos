@@ -49,6 +49,8 @@ class FocusPreferences(private val context: Context) {
         val ACTIVE_PROFILE = stringPreferencesKey("active_profile")
         // Haptic
         val HAPTIC_STYLE = stringPreferencesKey("haptic_style")
+        // Health Connect
+        val HEALTH_CONNECT_ENABLED = booleanPreferencesKey("health_connect_enabled")
     }
 
     // --- Settings ---
@@ -254,6 +256,16 @@ class FocusPreferences(private val context: Context) {
 
     suspend fun setActiveProfile(profileId: String) {
         context.dataStore.edit { it[Keys.ACTIVE_PROFILE] = profileId }
+    }
+
+    // --- Health Connect ---
+
+    suspend fun isHealthConnectEnabled(): Boolean {
+        return context.dataStore.data.first()[Keys.HEALTH_CONNECT_ENABLED] ?: false
+    }
+
+    suspend fun setHealthConnectEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.HEALTH_CONNECT_ENABLED] = enabled }
     }
 
     // --- Haptic ---

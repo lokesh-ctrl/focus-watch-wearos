@@ -41,6 +41,7 @@ class SettingsActivity : Activity() {
     private var dndEnabled = false
     private var activeProfileId = ""
     private var hapticStyle = "gentle"
+    private var healthConnectEnabled = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,6 +60,7 @@ class SettingsActivity : Activity() {
             dndEnabled = prefs.isDndEnabled()
             activeProfileId = prefs.getActiveProfile()
             hapticStyle = prefs.getHapticStyle()
+            healthConnectEnabled = prefs.isHealthConnectEnabled()
             buildUi()
         }
     }
@@ -196,6 +198,25 @@ class SettingsActivity : Activity() {
         }
         layout.addView(calendarSwitch)
         layout.addView(hintText("Shows upcoming meetings, suggests shorter focus"))
+        layout.addView(spacer())
+
+        // Health Connect Toggle (Pro)
+        layout.addView(proLabel("Health Connect"))
+        val healthSwitch = Switch(this).apply {
+            isChecked = healthConnectEnabled
+            isEnabled = isPro
+            setOnCheckedChangeListener { _, checked ->
+                if (!isPro) {
+                    isChecked = false
+                    launchUpgrade()
+                    return@setOnCheckedChangeListener
+                }
+                healthConnectEnabled = checked
+                scope.launch { prefs.setHealthConnectEnabled(checked) }
+            }
+        }
+        layout.addView(healthSwitch)
+        layout.addView(hintText("Log focus as mindfulness in Health Connect"))
         layout.addView(spacer())
 
         // Weekly Insights (Pro)

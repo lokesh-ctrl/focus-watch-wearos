@@ -67,4 +67,5 @@ dependencies {
     implementation(libs.firebase.crashlytics)
     implementation(libs.tiles)
     implementation(libs.tiles.material)
+    implementation(libs.health.connect)
 }

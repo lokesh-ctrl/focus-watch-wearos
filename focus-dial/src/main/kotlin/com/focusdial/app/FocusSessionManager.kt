@@ -16,6 +16,7 @@ import com.focusdial.app.complication.StatusSource
 import com.focusdial.app.data.AdaptiveBreakCalculator
 import com.focusdial.app.data.FocusPreferences
 import com.focusdial.app.data.FocusState
+import com.focusdial.app.data.HealthConnectManager
 import com.focusdial.app.data.HistoryRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +37,7 @@ class FocusSessionManager private constructor(private val context: Context) {
     private val historyRepository = HistoryRepository(context)
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
     private val notificationManager = context.getSystemService(NotificationManager::class.java)
+    private val healthConnectManager = HealthConnectManager(context)
 
     private val _state = MutableStateFlow<FocusState>(FocusState.Idle)
     val state: StateFlow<FocusState> = _state.asStateFlow()
@@ -129,6 +131,10 @@ class FocusSessionManager private constructor(private val context: Context) {
                         actualDurationMillis = current.durationMillis,
                         interruptionCount = current.interruptionCount,
                         completed = true
+                    )
+                    healthConnectManager.logMindfulnessSession(
+                        startMillis = current.startTimeMillis,
+                        endMillis = System.currentTimeMillis()
                     )
                     startBreakInternal()
                 }
