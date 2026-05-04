@@ -117,6 +117,12 @@
             android:exported="false"
             android:label="@string/app_name" />
 
+        <!-- Insights Activity -->
+        <activity
+            android:name=".InsightsActivity"
+            android:exported="false"
+            android:label="Weekly Insights" />
+
         <!-- Complication: Focus Duration -->
         <service
             android:name=".complication.FocusDurationSource"

@@ -16,6 +16,9 @@ interface DaySummaryDao {
     @Query("SELECT * FROM day_summaries ORDER BY dateKey DESC LIMIT :limit")
     suspend fun getRecentSummaries(limit: Int): List<DaySummaryEntity>
 
+    @Query("SELECT * FROM day_summaries WHERE dateKey >= :afterDate ORDER BY dateKey ASC")
+    suspend fun getSummariesAfter(afterDate: String): List<DaySummaryEntity>
+
     @Query("DELETE FROM day_summaries WHERE dateKey < :beforeKey")
     suspend fun deleteOlderThan(beforeKey: String)
 }

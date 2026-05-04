@@ -2,6 +2,7 @@ package com.focusdial.app
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -195,6 +196,23 @@ class SettingsActivity : Activity() {
         }
         layout.addView(calendarSwitch)
         layout.addView(hintText("Shows upcoming meetings, suggests shorter focus"))
+        layout.addView(spacer())
+
+        // Weekly Insights (Pro)
+        layout.addView(Button(this).apply {
+            text = if (isPro) "Weekly Insights" else "Weekly Insights [PRO]"
+            textSize = 14f
+            setBackgroundColor(if (isPro) 0xFF1B5E20.toInt() else 0xFF333333.toInt())
+            setTextColor(if (isPro) 0xFFFFFFFF.toInt() else 0xFFFFD700.toInt())
+            minimumHeight = 48
+            setOnClickListener {
+                if (!isPro) {
+                    launchUpgrade()
+                    return@setOnClickListener
+                }
+                startActivity(Intent(this@SettingsActivity, InsightsActivity::class.java))
+            }
+        })
         layout.addView(spacer())
 
         // Stats Section

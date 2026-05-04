@@ -54,6 +54,20 @@ class HistoryRepository(context: Context) {
             .sumOf { it.totalFocusMillis }
     }
 
+    suspend fun getWeeklySummaries(): List<DaySummaryEntity> {
+        val sevenDaysAgo = LocalDate.now().minusDays(6).toString()
+        return daySummaryDao.getSummariesAfter(sevenDaysAgo)
+    }
+
+    suspend fun getPreviousWeekTotalMillis(): Long {
+        val fourteenDaysAgo = LocalDate.now().minusDays(14).toString()
+        val sevenDaysAgo = LocalDate.now().minusDays(7).toString()
+        val summaries = daySummaryDao.getSummariesAfter(fourteenDaysAgo)
+        return summaries
+            .filter { it.dateKey < sevenDaysAgo }
+            .sumOf { it.totalFocusMillis }
+    }
+
     suspend fun getCurrentStreak(): Int {
         return prefs.getCurrentStreak()
     }
