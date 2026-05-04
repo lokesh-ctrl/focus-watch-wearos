@@ -4,6 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.core.content.FileProvider
+import java.io.File
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
@@ -259,6 +261,24 @@ class SettingsActivity : Activity() {
             scoreText.text = if (avgScore > 0) "Avg Score: $avgScore" else "Avg Score: —"
         }
 
+        // Export Data (Pro)
+        layout.addView(Button(this).apply {
+            text = if (isPro) "Export Data" else "Export Data [PRO]"
+            textSize = 14f
+            setBackgroundColor(if (isPro) 0xFF37474F.toInt() else 0xFF333333.toInt())
+            setTextColor(if (isPro) 0xFFFFFFFF.toInt() else 0xFFFFD700.toInt())
+            minimumHeight = 48
+            setOnClickListener {
+                if (!isPro) {
+                    launchUpgrade()
+                    return@setOnClickListener
+                }
+                exportData()
+            }
+        })
+        layout.addView(hintText("Export session history as JSON"))
+        layout.addView(spacer())
+
         // Upgrade Button (only for free users)
         if (!isPro) {
             layout.addView(spacer())
@@ -469,6 +489,28 @@ class SettingsActivity : Activity() {
             textSize = 16f
             setTextColor(if (isPro) 0xFFFFFFFF.toInt() else 0xFFFFD700.toInt())
             gravity = Gravity.CENTER
+        }
+    }
+
+    private fun exportData() {
+        scope.launch {
+            val json = historyRepo.exportToJson()
+            val exportDir = File(cacheDir, "exports")
+            exportDir.mkdirs()
+            val file = File(exportDir, "focus_dial_export.json")
+            file.writeText(json)
+
+            val uri = FileProvider.getUriForFile(
+                this@SettingsActivity,
+                "${packageName}.fileprovider",
+                file
+            )
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(shareIntent, "Export Focus Data"))
         }
     }
 

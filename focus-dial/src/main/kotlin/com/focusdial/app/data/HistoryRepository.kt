@@ -4,6 +4,8 @@ import android.content.Context
 import com.focusdial.app.data.db.DaySummaryEntity
 import com.focusdial.app.data.db.FocusDatabase
 import com.focusdial.app.data.db.SessionEntity
+import org.json.JSONArray
+import org.json.JSONObject
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -75,6 +77,29 @@ class HistoryRepository(context: Context) {
     suspend fun getDailyAverageScore(): Int {
         val today = LocalDate.now().toString()
         return daySummaryDao.getForDate(today)?.averageScore ?: 0
+    }
+
+    suspend fun exportToJson(): String {
+        val sessions = sessionDao.getAllSessions()
+        val jsonArray = JSONArray()
+        for (session in sessions) {
+            val obj = JSONObject().apply {
+                put("startTimeMillis", session.startTimeMillis)
+                put("durationMillis", session.durationMillis)
+                put("actualDurationMillis", session.actualDurationMillis)
+                put("interruptionCount", session.interruptionCount)
+                put("focusScore", session.focusScore)
+                put("completed", session.completed)
+                put("dateKey", session.dateKey)
+            }
+            jsonArray.put(obj)
+        }
+        val root = JSONObject().apply {
+            put("app", "Focus Dial")
+            put("exportDate", LocalDate.now().toString())
+            put("sessions", jsonArray)
+        }
+        return root.toString(2)
     }
 
     private suspend fun updateDaySummary(dateKey: String) {

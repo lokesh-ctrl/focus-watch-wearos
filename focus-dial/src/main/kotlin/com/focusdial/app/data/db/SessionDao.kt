@@ -12,6 +12,9 @@ interface SessionDao {
     @Query("SELECT * FROM sessions WHERE dateKey = :dateKey ORDER BY startTimeMillis DESC")
     suspend fun getSessionsForDate(dateKey: String): List<SessionEntity>
 
+    @Query("SELECT * FROM sessions ORDER BY startTimeMillis DESC")
+    suspend fun getAllSessions(): List<SessionEntity>
+
     @Query("DELETE FROM sessions WHERE startTimeMillis < :beforeMillis")
     suspend fun deleteOlderThan(beforeMillis: Long)
 }
