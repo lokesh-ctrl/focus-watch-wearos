@@ -342,6 +342,7 @@ class FocusSessionManager private constructor(private val context: Context) {
             ComplicationDataSourceUpdateRequester.create(context, source)
                 .requestUpdateAll()
         }
+        FocusTileService.requestUpdate(context)
     }
 
     private suspend fun enableDndIfConfigured() {

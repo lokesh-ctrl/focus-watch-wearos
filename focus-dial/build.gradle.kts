@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.watchface.complications.rendering)
     implementation(libs.datastore.preferences)
     implementation(libs.coroutines.android)
+    implementation(libs.coroutines.guava)
     implementation(libs.lifecycle.service)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.core.ktx)
@@ -64,4 +65,6 @@ dependencies {
     implementation(libs.billing)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
+    implementation(libs.tiles)
+    implementation(libs.tiles.material)
 }
