@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -20,10 +22,13 @@ android {
 
     signingConfigs {
         create("release") {
+            val props = Properties()
+            val f = rootProject.file("local.properties")
+            if (f.exists()) props.load(f.inputStream())
             storeFile = file("../keystore/focus-dial.keystore")
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: props.getProperty("KEYSTORE_PASSWORD", "")
             keyAlias = "focus-dial"
-            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            keyPassword = System.getenv("KEY_PASSWORD") ?: props.getProperty("KEY_PASSWORD", "")
         }
     }
 
