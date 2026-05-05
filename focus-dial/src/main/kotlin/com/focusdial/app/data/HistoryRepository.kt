@@ -27,9 +27,10 @@ class HistoryRepository(context: Context) {
         val score = FocusScoreCalculator.calculate(
             plannedDurationMillis, actualDurationMillis, interruptionCount, completed
         )
-        val dateKey = LocalDate.ofInstant(
-            Instant.ofEpochMilli(startTimeMillis), ZoneId.systemDefault()
-        ).toString()
+        val dateKey = Instant.ofEpochMilli(startTimeMillis)
+            .atZone(ZoneId.systemDefault())
+            .toLocalDate()
+            .toString()
 
         sessionDao.insert(
             SessionEntity(
