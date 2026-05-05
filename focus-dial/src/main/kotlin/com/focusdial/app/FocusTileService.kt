@@ -36,6 +36,10 @@ class FocusTileService : TileService() {
                     val elapsedMin = (manager.elapsedFocusMillis / 60_000).toInt()
                     "FOCUS ${elapsedMin}min"
                 }
+                is FocusState.Paused -> {
+                    val elapsedMin = (state.elapsedBeforePauseMillis / 60_000).toInt()
+                    "PAUSED ${elapsedMin}min"
+                }
                 is FocusState.Break -> {
                     val remainingMin = (manager.remainingBreakMillis / 60_000).toInt()
                     "BREAK ${remainingMin}min"
@@ -56,6 +60,7 @@ class FocusTileService : TileService() {
 
             val accentColor = when (state) {
                 is FocusState.Focus -> 0xFF4CAF50.toInt()
+                is FocusState.Paused -> 0xFFFFC107.toInt()
                 is FocusState.Break -> 0xFFFF9800.toInt()
                 is FocusState.Idle -> 0xFF888888.toInt()
             }

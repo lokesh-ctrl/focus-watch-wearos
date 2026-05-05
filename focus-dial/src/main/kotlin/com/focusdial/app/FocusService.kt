@@ -51,11 +51,15 @@ class FocusService : LifecycleService() {
             manager.state.collectLatest { state ->
                 when (state) {
                     is FocusState.Focus -> {
-                        if (previousState == "BREAK" || previousState == "IDLE") {
+                        if (previousState == "BREAK" || previousState == "IDLE" || previousState == "PAUSED") {
                             vibrateStart()
                         }
                         previousState = "FOCUS"
                         updateLoop(manager)
+                    }
+                    is FocusState.Paused -> {
+                        previousState = "PAUSED"
+                        updateOngoingNotification("Paused — tap watch face to resume")
                     }
                     is FocusState.Break -> {
                         if (previousState == "FOCUS") {
@@ -91,7 +95,7 @@ class FocusService : LifecycleService() {
                     val minutes = (remaining / 60_000).toInt()
                     "Break: ${minutes}min left"
                 }
-                is FocusState.Idle -> break
+                is FocusState.Paused, is FocusState.Idle -> break
             }
             updateOngoingNotification(text)
             delay(60_000L)
@@ -161,21 +165,73 @@ class FocusService : LifecycleService() {
     }
 
     private fun buildOngoingNotification(text: String): Notification {
+        val manager = FocusSessionManager.getInstance(this)
+        val state = manager.state.value
+
         val tapIntent = Intent(this, ToggleSessionActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(
+        val tapPending = PendingIntent.getActivity(
             this, 0, tapIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        return NotificationCompat.Builder(this, CHANNEL_FOCUS)
+        val builder = NotificationCompat.Builder(this, CHANNEL_FOCUS)
             .setSmallIcon(R.drawable.ic_launcher)
             .setContentTitle("Focus Dial")
             .setContentText(text)
             .setOngoing(true)
             .setSilent(true)
-            .setContentIntent(pendingIntent)
-            .addAction(R.drawable.ic_launcher, "Stop", pendingIntent)
-            .build()
+            .setContentIntent(tapPending)
+
+        when (state) {
+            is FocusState.Focus -> {
+                val pauseIntent = Intent(this, SessionActionReceiver::class.java).apply {
+                    action = ACTION_PAUSE
+                }
+                val pausePending = PendingIntent.getBroadcast(
+                    this, 1, pauseIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                val stopIntent = Intent(this, SessionActionReceiver::class.java).apply {
+                    action = ACTION_STOP
+                }
+                val stopPending = PendingIntent.getBroadcast(
+                    this, 2, stopIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.addAction(R.drawable.ic_launcher, "Pause", pausePending)
+                builder.addAction(R.drawable.ic_launcher, "Stop", stopPending)
+            }
+            is FocusState.Paused -> {
+                val resumeIntent = Intent(this, SessionActionReceiver::class.java).apply {
+                    action = ACTION_RESUME
+                }
+                val resumePending = PendingIntent.getBroadcast(
+                    this, 3, resumeIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                val stopIntent = Intent(this, SessionActionReceiver::class.java).apply {
+                    action = ACTION_STOP
+                }
+                val stopPending = PendingIntent.getBroadcast(
+                    this, 2, stopIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.addAction(R.drawable.ic_launcher, "Resume", resumePending)
+                builder.addAction(R.drawable.ic_launcher, "Stop", stopPending)
+            }
+            else -> {
+                val stopIntent = Intent(this, SessionActionReceiver::class.java).apply {
+                    action = ACTION_STOP
+                }
+                val stopPending = PendingIntent.getBroadcast(
+                    this, 2, stopIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                builder.addAction(R.drawable.ic_launcher, "Stop", stopPending)
+            }
+        }
+
+        return builder.build()
     }
 
     private fun updateOngoingNotification(text: String) {
@@ -187,5 +243,8 @@ class FocusService : LifecycleService() {
         private const val BREAK_NOTIFICATION_ID = 1002
         private const val CHANNEL_FOCUS = "focus_timer"
         const val CHANNEL_BREAK = "break_alert"
+        const val ACTION_PAUSE = "com.focusdial.app.ACTION_PAUSE"
+        const val ACTION_RESUME = "com.focusdial.app.ACTION_RESUME"
+        const val ACTION_STOP = "com.focusdial.app.ACTION_STOP"
     }
 }

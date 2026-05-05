@@ -27,6 +27,8 @@ class FocusPreferences(private val context: Context) {
         val PERSISTED_START_TIME = longPreferencesKey("persisted_start_time")
         val PERSISTED_DURATION = longPreferencesKey("persisted_duration")
         val PERSISTED_INTERRUPTIONS = intPreferencesKey("persisted_interruptions")
+        val PERSISTED_ELAPSED_BEFORE_PAUSE = longPreferencesKey("persisted_elapsed_before_pause")
+        val PERSISTED_PAUSED_AT = longPreferencesKey("persisted_paused_at")
         // Theme
         val SELECTED_THEME = stringPreferencesKey("selected_theme")
         // Streak
@@ -114,6 +116,14 @@ class FocusPreferences(private val context: Context) {
                     prefs[Keys.PERSISTED_DURATION] = state.durationMillis
                     prefs[Keys.PERSISTED_INTERRUPTIONS] = state.interruptionCount
                 }
+                is FocusState.Paused -> {
+                    prefs[Keys.PERSISTED_STATE_TYPE] = "PAUSED"
+                    prefs[Keys.PERSISTED_START_TIME] = state.originalStartTimeMillis
+                    prefs[Keys.PERSISTED_DURATION] = state.durationMillis
+                    prefs[Keys.PERSISTED_ELAPSED_BEFORE_PAUSE] = state.elapsedBeforePauseMillis
+                    prefs[Keys.PERSISTED_PAUSED_AT] = state.pausedAtMillis
+                    prefs[Keys.PERSISTED_INTERRUPTIONS] = state.interruptionCount
+                }
                 is FocusState.Break -> {
                     prefs[Keys.PERSISTED_STATE_TYPE] = "BREAK"
                     prefs[Keys.PERSISTED_START_TIME] = state.startTimeMillis
@@ -129,6 +139,13 @@ class FocusPreferences(private val context: Context) {
             "FOCUS" -> FocusState.Focus(
                 startTimeMillis = prefs[Keys.PERSISTED_START_TIME] ?: return FocusState.Idle,
                 durationMillis = prefs[Keys.PERSISTED_DURATION] ?: return FocusState.Idle,
+                interruptionCount = prefs[Keys.PERSISTED_INTERRUPTIONS] ?: 0
+            )
+            "PAUSED" -> FocusState.Paused(
+                originalStartTimeMillis = prefs[Keys.PERSISTED_START_TIME] ?: return FocusState.Idle,
+                durationMillis = prefs[Keys.PERSISTED_DURATION] ?: return FocusState.Idle,
+                elapsedBeforePauseMillis = prefs[Keys.PERSISTED_ELAPSED_BEFORE_PAUSE] ?: return FocusState.Idle,
+                pausedAtMillis = prefs[Keys.PERSISTED_PAUSED_AT] ?: return FocusState.Idle,
                 interruptionCount = prefs[Keys.PERSISTED_INTERRUPTIONS] ?: 0
             )
             "BREAK" -> FocusState.Break(

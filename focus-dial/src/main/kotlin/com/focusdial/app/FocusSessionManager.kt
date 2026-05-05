@@ -57,6 +57,7 @@ class FocusSessionManager private constructor(private val context: Context) {
                         }
                         restored
                     }
+                    is FocusState.Paused -> restored
                     is FocusState.Break -> {
                         val elapsed = now - restored.startTimeMillis
                         if (elapsed >= restored.durationMillis) {
@@ -68,8 +69,10 @@ class FocusSessionManager private constructor(private val context: Context) {
                     is FocusState.Idle -> FocusState.Idle
                 }
                 _state.value = adjustedState
-                if (adjustedState !is FocusState.Idle) {
+                if (adjustedState is FocusState.Focus || adjustedState is FocusState.Break) {
                     scheduleAlarm(adjustedState)
+                    startService()
+                } else if (adjustedState is FocusState.Paused) {
                     startService()
                 }
             }
@@ -94,20 +97,77 @@ class FocusSessionManager private constructor(private val context: Context) {
         }
     }
 
-    fun stopSession() {
+    fun pauseSession() {
         scope.launch {
             mutex.withLock {
                 val current = _state.value
                 if (current is FocusState.Focus) {
-                    val elapsed = System.currentTimeMillis() - current.startTimeMillis
-                    preferences.addCompletedSession(elapsed)
-                    historyRepository.logSession(
-                        startTimeMillis = current.startTimeMillis,
-                        plannedDurationMillis = current.durationMillis,
-                        actualDurationMillis = elapsed,
-                        interruptionCount = current.interruptionCount,
-                        completed = false
+                    cancelAlarm()
+                    val now = System.currentTimeMillis()
+                    val elapsed = now - current.startTimeMillis
+                    val pausedState = FocusState.Paused(
+                        originalStartTimeMillis = current.startTimeMillis,
+                        durationMillis = current.durationMillis,
+                        elapsedBeforePauseMillis = elapsed,
+                        pausedAtMillis = now,
+                        interruptionCount = current.interruptionCount + 1
                     )
+                    _state.value = pausedState
+                    preferences.persistState(pausedState)
+                    requestComplicationUpdates()
+                }
+            }
+        }
+    }
+
+    fun resumeSession() {
+        scope.launch {
+            mutex.withLock {
+                val current = _state.value
+                if (current is FocusState.Paused) {
+                    val now = System.currentTimeMillis()
+                    val newStart = now - current.elapsedBeforePauseMillis
+                    val resumedState = FocusState.Focus(
+                        startTimeMillis = newStart,
+                        durationMillis = current.durationMillis,
+                        interruptionCount = current.interruptionCount
+                    )
+                    _state.value = resumedState
+                    preferences.persistState(resumedState)
+                    scheduleAlarm(resumedState)
+                    requestComplicationUpdates()
+                }
+            }
+        }
+    }
+
+    fun stopSession() {
+        scope.launch {
+            mutex.withLock {
+                val current = _state.value
+                when (current) {
+                    is FocusState.Focus -> {
+                        val elapsed = System.currentTimeMillis() - current.startTimeMillis
+                        preferences.addCompletedSession(elapsed)
+                        historyRepository.logSession(
+                            startTimeMillis = current.startTimeMillis,
+                            plannedDurationMillis = current.durationMillis,
+                            actualDurationMillis = elapsed,
+                            interruptionCount = current.interruptionCount,
+                            completed = false
+                        )
+                    }
+                    is FocusState.Paused -> {
+                        preferences.addCompletedSession(current.elapsedBeforePauseMillis)
+                        historyRepository.logSession(
+                            startTimeMillis = current.originalStartTimeMillis,
+                            plannedDurationMillis = current.durationMillis,
+                            actualDurationMillis = current.elapsedBeforePauseMillis,
+                            interruptionCount = current.interruptionCount,
+                            completed = false
+                        )
+                    }
+                    else -> {}
                 }
                 cancelAlarm()
                 restoreDnd()
@@ -172,21 +232,39 @@ class FocusSessionManager private constructor(private val context: Context) {
     fun toggleSession() {
         scope.launch {
             mutex.withLock {
-                when (_state.value) {
+                when (val current = _state.value) {
                     is FocusState.Idle -> startFocusInternal()
-                    is FocusState.Focus, is FocusState.Break -> {
-                        val current = _state.value
-                        if (current is FocusState.Focus) {
-                            val elapsed = System.currentTimeMillis() - current.startTimeMillis
-                            preferences.addCompletedSession(elapsed)
-                            historyRepository.logSession(
-                                startTimeMillis = current.startTimeMillis,
-                                plannedDurationMillis = current.durationMillis,
-                                actualDurationMillis = elapsed,
-                                interruptionCount = current.interruptionCount,
-                                completed = false
-                            )
-                        }
+                    is FocusState.Paused -> {
+                        val now = System.currentTimeMillis()
+                        val newStart = now - current.elapsedBeforePauseMillis
+                        val resumedState = FocusState.Focus(
+                            startTimeMillis = newStart,
+                            durationMillis = current.durationMillis,
+                            interruptionCount = current.interruptionCount
+                        )
+                        _state.value = resumedState
+                        preferences.persistState(resumedState)
+                        scheduleAlarm(resumedState)
+                        requestComplicationUpdates()
+                    }
+                    is FocusState.Focus -> {
+                        val elapsed = System.currentTimeMillis() - current.startTimeMillis
+                        preferences.addCompletedSession(elapsed)
+                        historyRepository.logSession(
+                            startTimeMillis = current.startTimeMillis,
+                            plannedDurationMillis = current.durationMillis,
+                            actualDurationMillis = elapsed,
+                            interruptionCount = current.interruptionCount,
+                            completed = false
+                        )
+                        cancelAlarm()
+                        restoreDnd()
+                        _state.value = FocusState.Idle
+                        preferences.persistState(FocusState.Idle)
+                        stopService()
+                        requestComplicationUpdates()
+                    }
+                    is FocusState.Break -> {
                         cancelAlarm()
                         restoreDnd()
                         _state.value = FocusState.Idle
@@ -241,6 +319,7 @@ class FocusSessionManager private constructor(private val context: Context) {
     val statusText: String
         get() = when (_state.value) {
             is FocusState.Focus -> "FOCUS"
+            is FocusState.Paused -> "PAUSED"
             is FocusState.Break -> "BREAK"
             is FocusState.Idle -> "IDLE"
         }
@@ -302,7 +381,7 @@ class FocusSessionManager private constructor(private val context: Context) {
                 val trigger = state.startTimeMillis + state.durationMillis
                 trigger to ACTION_BREAK_COMPLETE
             }
-            is FocusState.Idle -> return
+            is FocusState.Idle, is FocusState.Paused -> return
         }
 
         val intent = Intent(context, TimerAlarmReceiver::class.java).apply {

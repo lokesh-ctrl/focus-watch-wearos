@@ -1,6 +1,5 @@
 package com.focusdial.app
 
-import android.content.Intent
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -66,10 +65,7 @@ class FocusWatchFaceService : WatchFaceService() {
         watchFace.setTapListener(object : WatchFace.TapListener {
             override fun onTapEvent(tapType: Int, tapEvent: TapEvent, complicationSlot: ComplicationSlot?) {
                 if (tapType == TapType.UP && complicationSlot == null) {
-                    val intent = Intent(applicationContext, ToggleSessionActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    applicationContext.startActivity(intent)
+                    renderer.handleTap(tapEvent.yPos.toFloat())
                 }
             }
         })
@@ -100,7 +96,13 @@ class FocusCanvasRenderer(
     private val is24Hour: Boolean
         get() = DateFormat.is24HourFormat(context)
 
-    // Cached data — written by background coroutine, read by render()
+    // Overlay state
+    private enum class OverlayState { HIDDEN, SHOWING }
+    @Volatile private var overlayState = OverlayState.HIDDEN
+    @Volatile private var overlayShownAt = 0L
+    private val overlayDurationMs = 3000L
+
+    // Cached data
     @Volatile private var cachedTotalText = ""
     @Volatile private var cachedDots = ""
     @Volatile private var cachedWeeklyText = ""
@@ -109,9 +111,9 @@ class FocusCanvasRenderer(
     @Volatile private var cachedCalendarHint: String? = null
     @Volatile private var cachedTheme: FocusTheme = FocusThemes.MINIMAL
 
-    // Paints — reconfigured when theme changes
     private var currentThemeId = "minimal"
 
+    // Paints
     private val timePaint = Paint().apply {
         color = Color.WHITE
         textSize = 72f
@@ -190,11 +192,84 @@ class FocusCanvasRenderer(
         isAntiAlias = false
     }
 
+    private val breathPaint = Paint().apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 3f
+        isAntiAlias = true
+    }
+
+    private val overlayScrimPaint = Paint().apply {
+        color = Color.argb(180, 0, 0, 0)
+        isAntiAlias = true
+    }
+
+    private val overlayTextPaint = Paint().apply {
+        color = Color.WHITE
+        textSize = 20f
+        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        textAlign = Paint.Align.CENTER
+        isAntiAlias = true
+    }
+
+    private val overlayIconPaint = Paint().apply {
+        textSize = 28f
+        textAlign = Paint.Align.CENTER
+        isAntiAlias = true
+    }
+
+    private val overlayDividerPaint = Paint().apply {
+        color = Color.parseColor("#555555")
+        strokeWidth = 1f
+        isAntiAlias = true
+    }
+
     init {
         backgroundScope.launch {
             while (true) {
                 refreshCacheAsync()
                 delay(5000L)
+            }
+        }
+    }
+
+    fun handleTap(yPos: Float) {
+        val manager = FocusSessionManager.getInstance(context)
+        val state = manager.state.value
+        val centerY = surfaceHolder.surfaceFrame.height() / 2f
+
+        when {
+            // IDLE: start immediately
+            state is FocusState.Idle -> manager.startFocus()
+
+            // PAUSED: resume immediately
+            state is FocusState.Paused -> manager.resumeSession()
+
+            // FOCUS with overlay showing: handle pause/stop zones
+            state is FocusState.Focus && overlayState == OverlayState.SHOWING -> {
+                if (yPos < centerY) {
+                    manager.pauseSession()
+                } else {
+                    manager.stopSession()
+                }
+                overlayState = OverlayState.HIDDEN
+            }
+
+            // FOCUS without overlay: show overlay
+            state is FocusState.Focus -> {
+                overlayState = OverlayState.SHOWING
+                overlayShownAt = System.currentTimeMillis()
+            }
+
+            // BREAK with overlay showing: end break
+            state is FocusState.Break && overlayState == OverlayState.SHOWING -> {
+                manager.stopSession()
+                overlayState = OverlayState.HIDDEN
+            }
+
+            // BREAK without overlay: show overlay
+            state is FocusState.Break -> {
+                overlayState = OverlayState.SHOWING
+                overlayShownAt = System.currentTimeMillis()
             }
         }
     }
@@ -265,8 +340,15 @@ class FocusCanvasRenderer(
         val isAmbient = renderParameters.drawMode == androidx.wear.watchface.DrawMode.AMBIENT
 
         if (isAmbient) {
+            overlayState = OverlayState.HIDDEN
             renderAmbient(canvas, centerX, centerY, zonedDateTime)
             return
+        }
+
+        // Auto-dismiss overlay after timeout
+        if (overlayState == OverlayState.SHOWING &&
+            System.currentTimeMillis() - overlayShownAt > overlayDurationMs) {
+            overlayState = OverlayState.HIDDEN
         }
 
         val theme = cachedTheme
@@ -275,8 +357,14 @@ class FocusCanvasRenderer(
 
         when (state) {
             is FocusState.Focus -> renderFocusMode(canvas, centerX, centerY, width, height, zonedDateTime, manager, theme)
+            is FocusState.Paused -> renderPausedMode(canvas, centerX, centerY, width, height, zonedDateTime, state, theme)
             is FocusState.Break -> renderBreakMode(canvas, centerX, centerY, width, height, zonedDateTime, manager, theme)
             is FocusState.Idle -> renderIdleMode(canvas, centerX, centerY, width, height, zonedDateTime, theme)
+        }
+
+        // Render overlay on top if active
+        if (overlayState == OverlayState.SHOWING && (state is FocusState.Focus || state is FocusState.Break)) {
+            renderOverlay(canvas, centerX, centerY, width, height, state)
         }
     }
 
@@ -327,10 +415,60 @@ class FocusCanvasRenderer(
         canvas.drawText(formatTime(time), cx, cy + 120f, subtlePaint)
     }
 
-    private val breathPaint = Paint().apply {
-        style = Paint.Style.STROKE
-        strokeWidth = 3f
-        isAntiAlias = true
+    private fun renderPausedMode(
+        canvas: Canvas, cx: Float, cy: Float, w: Float, h: Float,
+        time: ZonedDateTime, state: FocusState.Paused, theme: FocusTheme
+    ) {
+        val progress = (state.elapsedBeforePauseMillis.toFloat() / state.durationMillis).coerceIn(0f, 1f)
+        val elapsedMin = (state.elapsedBeforePauseMillis / 60_000).toInt()
+        val pausedForSec = ((System.currentTimeMillis() - state.pausedAtMillis) / 1000).toInt()
+        val pausedMin = pausedForSec / 60
+        val pausedSecRemainder = pausedForSec % 60
+
+        // Desaturated arc — dashed appearance via short segments
+        val pad = theme.arcStrokeWidth + 20f
+        val arcRect = RectF(pad, pad, w - pad, h - pad)
+        trackPaint.color = theme.trackColor
+        canvas.drawArc(arcRect, -90f, 360f, false, trackPaint)
+
+        // Draw progress arc in muted color
+        val mutedAccent = Color.argb(
+            128,
+            Color.red(theme.accentColor),
+            Color.green(theme.accentColor),
+            Color.blue(theme.accentColor)
+        )
+        arcPaint.color = mutedAccent
+        canvas.drawArc(arcRect, -90f, progress * 360f, false, arcPaint)
+
+        // PAUSED label with pulsing alpha
+        val pulsePhase = (System.currentTimeMillis() % 2000).toFloat() / 2000f
+        val pulseAlpha = (155 + 100 * kotlin.math.sin(pulsePhase * 2 * Math.PI).toFloat()).toInt()
+        statusPaint.color = Color.argb(pulseAlpha, 255, 193, 7) // amber
+        canvas.drawText("PAUSED", cx, cy - 85f, statusPaint)
+
+        timePaint.textSize = 68f
+        timePaint.color = Color.parseColor("#CCCCCC")
+        canvas.drawText("${elapsedMin}min", cx, cy - 10f, timePaint)
+        timePaint.color = Color.WHITE
+        timePaint.textSize = 72f
+
+        // Pulsing "Tap to resume" text
+        infoPaint.color = Color.argb(pulseAlpha, 255, 255, 255)
+        canvas.drawText("Tap to resume", cx, cy + 40f, infoPaint)
+        infoPaint.color = Color.parseColor("#CCCCCC")
+
+        // Paused duration
+        val pausedText = if (pausedMin > 0) "paused ${pausedMin}m ${pausedSecRemainder}s"
+            else "paused ${pausedSecRemainder}s"
+        subtlePaint.color = Color.parseColor("#FF9800")
+        canvas.drawText(pausedText, cx, cy + 75f, subtlePaint)
+        subtlePaint.color = Color.parseColor("#888888")
+
+        // Interruption count
+        canvas.drawText("${state.interruptionCount} interruption${if (state.interruptionCount != 1) "s" else ""}", cx, cy + 105f, subtlePaint)
+
+        canvas.drawText(formatTime(time), cx, cy + 140f, subtlePaint)
     }
 
     private fun renderBreakMode(
@@ -349,7 +487,7 @@ class FocusCanvasRenderer(
         arcPaint.color = theme.breakColor
         canvas.drawArc(arcRect, -90f, progress * 360f, false, arcPaint)
 
-        // Breathing circle animation (4s inhale + 4s exhale cycle)
+        // Breathing circle animation
         val breathCycle = 8000L
         val breathPhase = (System.currentTimeMillis() % breathCycle).toFloat() / breathCycle
         val breathScale = if (breathPhase < 0.5f) {
@@ -400,7 +538,6 @@ class FocusCanvasRenderer(
             canvas.drawText(cachedScoreText, cx, cy + 50f, infoPaint)
         }
 
-        // Dots + streak on same line
         dotPaint.color = theme.accentColor
         val dotsAndStreak = if (cachedStreakText.isNotEmpty()) {
             "$cachedDots  $cachedStreakText"
@@ -409,7 +546,6 @@ class FocusCanvasRenderer(
         }
         canvas.drawText(dotsAndStreak, cx, cy + 80f, dotPaint)
 
-        // Calendar hint
         val hint = cachedCalendarHint
         if (hint != null) {
             subtlePaint.color = Color.parseColor("#AAAAAA")
@@ -420,6 +556,53 @@ class FocusCanvasRenderer(
             canvas.drawText("Tap to focus", cx, cy + 110f, subtlePaint)
             subtlePaint.color = Color.parseColor("#888888")
         }
+    }
+
+    private fun renderOverlay(
+        canvas: Canvas, cx: Float, cy: Float, w: Float, h: Float,
+        state: FocusState
+    ) {
+        // Semi-transparent scrim
+        canvas.drawCircle(cx, cy, w / 2f, overlayScrimPaint)
+
+        // Divider line
+        canvas.drawLine(cx - 80f, cy, cx + 80f, cy, overlayDividerPaint)
+
+        if (state is FocusState.Focus) {
+            // Top zone: PAUSE
+            overlayIconPaint.color = Color.parseColor("#FFC107") // amber
+            canvas.drawText("⏸", cx, cy - 50f, overlayIconPaint)
+            overlayTextPaint.color = Color.parseColor("#FFC107")
+            canvas.drawText("PAUSE", cx, cy - 20f, overlayTextPaint)
+
+            // Bottom zone: STOP
+            overlayIconPaint.color = Color.parseColor("#F44336") // red
+            canvas.drawText("■", cx, cy + 50f, overlayIconPaint)
+            overlayTextPaint.color = Color.parseColor("#F44336")
+            canvas.drawText("STOP", cx, cy + 80f, overlayTextPaint)
+        } else if (state is FocusState.Break) {
+            // Centered: End break
+            overlayTextPaint.color = Color.WHITE
+            canvas.drawText("End break?", cx, cy - 10f, overlayTextPaint)
+            overlayTextPaint.color = Color.parseColor("#FFC107")
+            canvas.drawText("Tap to confirm", cx, cy + 20f, overlayTextPaint)
+        }
+
+        // Timeout indicator — subtle fade hint
+        val elapsed = System.currentTimeMillis() - overlayShownAt
+        val remaining = (overlayDurationMs - elapsed).toFloat() / overlayDurationMs
+        val indicatorPaint = Paint().apply {
+            color = Color.parseColor("#666666")
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
+            isAntiAlias = true
+        }
+        val indicatorRect = RectF(cx - 30f, cy + 110f, cx + 30f, cy + 116f)
+        canvas.drawRoundRect(indicatorRect, 3f, 3f, indicatorPaint)
+        indicatorPaint.color = Color.WHITE
+        val filledWidth = 60f * remaining
+        val filledRect = RectF(cx - 30f, cy + 110f, cx - 30f + filledWidth, cy + 116f)
+        canvas.drawRoundRect(filledRect, 3f, 3f, indicatorPaint)
     }
 
     private fun renderAmbient(canvas: Canvas, cx: Float, cy: Float, time: ZonedDateTime) {
@@ -433,6 +616,10 @@ class FocusCanvasRenderer(
             is FocusState.Focus -> {
                 val elapsedMin = (manager.elapsedFocusMillis / 60_000).toInt()
                 canvas.drawText("FOCUS ${elapsedMin}min", cx, cy + 60f, ambientInfoPaint)
+            }
+            is FocusState.Paused -> {
+                val elapsedMin = (state.elapsedBeforePauseMillis / 60_000).toInt()
+                canvas.drawText("PAUSED ${elapsedMin}min", cx, cy + 60f, ambientInfoPaint)
             }
             is FocusState.Break -> {
                 val remainingMin = (manager.remainingBreakMillis / 60_000).toInt()

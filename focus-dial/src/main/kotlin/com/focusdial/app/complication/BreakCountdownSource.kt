@@ -30,11 +30,16 @@ class BreakCountdownSource : SuspendingComplicationDataSourceService() {
 
         val manager = FocusSessionManager.getInstance(this)
 
-        val text = when (manager.state.value) {
+        val text = when (val state = manager.state.value) {
             is FocusState.Focus -> {
                 val remaining = manager.remainingFocusMillis
                 val minutes = (remaining / 60_000).toInt()
                 "Break ${minutes}m"
+            }
+            is FocusState.Paused -> {
+                val remaining = state.durationMillis - state.elapsedBeforePauseMillis
+                val minutes = (remaining / 60_000).toInt()
+                "⏸ ${minutes}m"
             }
             is FocusState.Break -> {
                 val remaining = manager.remainingBreakMillis

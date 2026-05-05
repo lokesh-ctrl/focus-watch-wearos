@@ -31,14 +31,24 @@ class FocusDurationSource : SuspendingComplicationDataSourceService() {
 
     override suspend fun onComplicationRequest(request: ComplicationRequest): ComplicationData {
         val manager = FocusSessionManager.getInstance(this)
+        val state = manager.state.value
+
+        val (progress, text) = when (state) {
+            is FocusState.Focus -> {
+                val p = manager.progressFraction
+                val minutes = (manager.elapsedFocusMillis / 60_000).toInt()
+                p to "${minutes}min"
+            }
+            is FocusState.Paused -> {
+                val p = (state.elapsedBeforePauseMillis.toFloat() / state.durationMillis).coerceIn(0f, 1f)
+                val minutes = (state.elapsedBeforePauseMillis / 60_000).toInt()
+                p to "⏸${minutes}m"
+            }
+            else -> 0f to "--"
+        }
 
         return when (request.complicationType) {
             ComplicationType.RANGED_VALUE -> {
-                val progress = manager.progressFraction
-                val elapsed = manager.elapsedFocusMillis
-                val minutes = (elapsed / 60_000).toInt()
-                val text = if (manager.state.value is FocusState.Focus) "${minutes}min" else "--"
-
                 RangedValueComplicationData.Builder(
                     value = progress,
                     min = 0f,
@@ -49,10 +59,6 @@ class FocusDurationSource : SuspendingComplicationDataSourceService() {
                     .build()
             }
             else -> {
-                val elapsed = manager.elapsedFocusMillis
-                val minutes = (elapsed / 60_000).toInt()
-                val text = if (manager.state.value is FocusState.Focus) "${minutes}min" else "--"
-
                 ShortTextComplicationData.Builder(
                     text = PlainComplicationText.Builder(text).build(),
                     contentDescription = PlainComplicationText.Builder("Focus duration").build()

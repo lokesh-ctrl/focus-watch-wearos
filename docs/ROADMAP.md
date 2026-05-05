@@ -56,6 +56,8 @@ $4.99 is above the $1.99 "throwaway" tier but below the $9.99 deliberation thres
 - [x] Guided breathing canvas animation during break
 - [x] 2 new themes (Forest, Neon)
 - [x] Haptic pattern options (gentle, assertive, silent)
+- [x] Pause/resume session with tap-to-reveal overlay (pause costs +1 interruption)
+- [x] Notification actions: Pause, Resume, Stop buttons
 
 ## Phase 2: Ecosystem (2-3 months post-launch)
 

@@ -35,6 +35,9 @@
                 android:resource="@drawable/preview_focus" />
             <meta-data
                 android:name="android.service.wallpaper"
+                android:resource="@xml/watch_face" />
+            <meta-data
+                android:name="androidx.wear.watchface.WATCH_FACE_INFO"
                 android:resource="@xml/watch_face_info" />
         </service>
 
@@ -74,6 +77,17 @@
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Session Action Receiver (notification buttons) -->
+        <receiver
+            android:name=".SessionActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.focusdial.app.ACTION_PAUSE" />
+                <action android:name="com.focusdial.app.ACTION_RESUME" />
+                <action android:name="com.focusdial.app.ACTION_STOP" />
             </intent-filter>
         </receiver>
 
