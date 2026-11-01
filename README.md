@@ -1,3 +1,5 @@
+hi
+
 # Focus Dial
 
 A productivity-focused watch face for Wear OS that combines a Pomodoro timer with an always-on display. Tap the dial to start a focus session — no app to open, no phone required.
