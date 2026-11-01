@@ -12,22 +12,24 @@ object AdaptiveBreakCalculator {
         consecutiveSessionsToday: Int,
         currentHour: Int
     ): BreakSuggestion {
+        val baseDuration = baseBreakMinutes.coerceIn(3, 30)
+
         if (consecutiveSessionsToday >= 3) {
             return BreakSuggestion(
-                durationMinutes = baseBreakMinutes * 2,
+                durationMinutes = (baseDuration * 2).coerceIn(3, 30),
                 reason = "Extended break ($consecutiveSessionsToday sessions)"
             )
         }
 
         if (currentHour >= 20) {
             return BreakSuggestion(
-                durationMinutes = baseBreakMinutes * 2,
+                durationMinutes = (baseDuration * 2).coerceIn(3, 30),
                 reason = "Evening wind-down"
             )
         }
 
         return BreakSuggestion(
-            durationMinutes = baseBreakMinutes,
+            durationMinutes = baseDuration,
             reason = "Standard break"
         )
     }
