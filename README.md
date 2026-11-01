@@ -4,7 +4,7 @@ hi
 
 # Focus Dial
 
-Focus Dial is a productivity-focused Wear OS watch face and focus timer. Start Pomodoro-style sessions from the watch dial, track progress and streaks, and manage breaks without opening an app or reaching for a phone.
+Focus Dial is a productivity-focused Wear OS watch face and focus timer that turns the watch dial into a low-friction Pomodoro workspace. Start a focus session with a tap, see progress and streaks at a glance, and manage breaks without opening an app or reaching for your phone.
 
 ## Features
 
