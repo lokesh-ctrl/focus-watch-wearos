@@ -1,7 +1,3 @@
-hi
-**hello**
-**how are you**
-
 # Focus Dial
 
 Focus Dial is a productivity-focused Wear OS watch face and focus timer that turns the watch dial into a low-friction Pomodoro workspace. Start a focus session with a tap, see progress and streaks at a glance, and manage breaks without opening an app or reaching for your phone.
@@ -19,6 +15,14 @@ Focus Dial is a productivity-focused Wear OS watch face and focus timer that tur
 - **6 complications** — Focus Duration, Break Countdown, Session Count, Daily Total, Interruptions, Status
 - **Haptic feedback** — Distinct vibration patterns for start, break, and end
 - **Ambient mode** — Low-power display with time + focus state
+
+## Tech Stack
+
+- **Language and build:** Kotlin 1.9.22, Java 17, Gradle, Android Gradle Plugin 8.4
+- **Platform:** Android SDK 34, Wear OS, AndroidX Watch Face, complications, and Tiles APIs
+- **Local data:** Room 2.6.1 and DataStore Preferences 1.1.0
+- **Asynchronous work:** Kotlin Coroutines 1.8.0 and AndroidX Lifecycle 2.7.0
+- **Integrations:** Google Play Billing 7.0.0, Firebase Crashlytics (Firebase BOM 33.1.0), and Health Connect
 
 ## Architecture
 
