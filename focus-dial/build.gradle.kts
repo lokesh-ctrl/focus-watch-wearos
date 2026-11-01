@@ -73,4 +73,5 @@ dependencies {
     implementation(libs.tiles)
     implementation(libs.tiles.material)
     implementation(libs.health.connect)
+    testImplementation("junit:junit:4.13.2")
 }
